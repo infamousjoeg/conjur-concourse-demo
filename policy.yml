@@ -1,0 +1,28 @@
+- !policy
+  id: concourse-ci
+  owner: !group devsecops
+  body:
+    # Create variables anchor with all secret vars
+    - &variables:
+      - !variable db-username
+      - !variable db-password
+    
+    # Create layers anchor with two layers
+    - &layers:
+      - !layer build-workers
+      - !layer release-workers
+    
+    # Create fly-users group for privileges
+    - !group fly-users
+    
+    # Permit read, execute on all secrets from members of the layer
+    - !permit
+      role: *layers
+      privileges: [ read, execute ]
+      resource: *variables
+    
+    # Permit read, execute, update on all secrets from members of fly-users group
+    - !permit
+      role: !group fly-users
+      privileges: [ read, execute, update ]
+      resource: *variables
